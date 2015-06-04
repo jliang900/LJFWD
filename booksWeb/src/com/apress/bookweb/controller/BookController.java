@@ -18,9 +18,6 @@ import com.apress.bookweb.model.Category;
 
 public class BookController extends HttpServlet {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
 	public BookController() {
