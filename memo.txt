@@ -1,0 +1,172 @@
+*******************
+[LJWD]
+
+Learn Java for Web Development
+by Vishal Layka
+
+*******************
+[MySQL]
+
+After downloading and unzipping, original files are placed under
+/usr/local/mysql-5.6.24-osx10.8-x86_64/, and following instructions in
+/usr/local/mysql-5.6.24-osx10.8-x86_64/INSTALL-BINARY, a symbolic link is
+created at /usr/local/mysql.
+
+It is suggested to create group mysql and user mysql. However on Mac OS there is
+not groupadd nor useradd commands as in other linux. Instead 'dscl' is the way
+to go, and it is quite complicated. I did not follow it. I simply used chown and
+as a result it seemed to create _mysql group and _mysql user.
+
+After running /usr/local/mysql/scripts/mysql_install_db, mysql sets up its db.
+See /usr/local/mysql/install.20150505.log for more details.
+
+Password for root and jliang: 12051063
+Start mysql:
+$cd /usr/local/mysql-5.6.24-osx10.8-x86_64
+$sudo ./bin/mysqld_safe&
+Stop mysql:
+$sudo /usr/local/mysql-5.6.24-osx10.8-x86_64/bin/mysqladmin -u root -p shutdown
+Login mysql:
+$/usr/local/mysql-5.6.24-osx10.8-x86_64/bin/mysql -u jliang -p
+
+*******************
+[Tomcat]
+
+The original distribution file is downloaded at
+/Volumes/Macintosh\ HD/Workspace/Download/DEV/apache-tomcat-8.0.21.tar.gz.
+
+The distribution is then unzipped to /usr/local/apache-tomcat-8.0.21/ and a
+symbolic link is created as /usr/local/tomcat/.
+
+Start tomcat:
+$/usr/local/tomcat/bin/startup.sh
+Stop tomcat:
+$/usr/local/tomcat/bin/shutdown.sh
+Verify:
+Visit 127.0.0.1:8080 in a browser.
+Visit localhost:8080 in a browser.
+
+*******************
+[MySQL [Abandoned connection cleanup thread] in Tomcat]
+
+MySQL connector/J 5.1.26
+MySQL 5.6.24
+Tomcat 8.0.21
+
+When I test the "booksWeb" project ("Learn Java for Web Development"), tomcat
+reports in catalina.log a WARNING that "The web applicaation [booksWeb] appears
+to have started a thread named [Abandoned connection cleanup thread] but has
+failed to stop it. This is very likely to create a memory leak."
+
+After some study online, it seems that this thread is started by MySQL in a
+static initiation, and may be responsible for clean up mysql connections. How-
+ever, somehow this thread is not closed properly, or at least Tomcat thinks so.
+
+According to "http://forums.mysql.com/read.php?3,585600,585600", MySQL con/J
+5.1.25 has fixed it. It states that:
+
+* Tomcat would fail to stop abandoned connection cleanup
+    threads. The fix for Bug#65909 introduced the ability to stop
+    daemon threads started by the Connector/J driver but it also
+    cleared references from daemon threads to the parent
+    classloader. When the clearReferencesStopThreads property is
+    set to "true" in context.xml, Tomcat analyzes classloaders to
+    detect and stop lost threads. This fix ensures that abandoned
+    connection cleanup threads retain a reference to the parent
+    classloader. (Bug #68556, Bug #16443387)
+    
+Nevertheless, I still observe the WARNING.
+
+Solutions on the web has two main flavors, as this thread reveals:
+http://stackoverflow.com/questions/11872316/tomcat-guice-jdbc-memory-leak.
+One school proposes to have a context listener or something similar explicitly
+shut down this thread. There are various ways to do it. The other school, which
+I followed and preferred, simply alters the server.xml for Tomcat, directing its
+JreMemoryLeakPreventionListener to handle com.mysql.jdbc.NonRegisteringDriver:
+
+  <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener"   
+        classesToInitialize="com.mysql.jdbc.NonRegisteringDriver"/>
+
+This directive removed the WARNING without adding any code in JSP or web.xml.
+
+However, this requires tomcat to load mysql jdbc lib before loading any web
+applications, and therefore it needs the mysql jdbc jar file in tomcat lib/
+folder.
+
+Some brief online study suggests the following:
+1. some people prefer putting mysql jdbc jar file in each web app's lib/,
+so that they could use different versions if needed;
+2. others want a connection polled JNDI datassource to improve performance,
+so they put it in tomcat lib/;
+3. it is said the jar in WEB-INF/lib/ would override the one in tomcat/lib/
+for that particular web app;
+
+(But, if the two jar files are of different version, I am not sure if the
+NonRegisteringDriver class in the jar that tomcat has can work with the  
+[Abandoned connection cleanup thread] started by the jar of the web app.
+
+After all, since I expect to have a pooled JNDI datasource in the future,
+I decided to put the jar in tomcat/lib/. This works fine with the samples in
+the early chapters in LJWD. These samples directly use DriverManager#getConnection()
+method, and all it asks is the mysql jdbc jar in class path.
+
+*******************
+[Deploy a web application in Tomcat]
+
+1. Generate WAR file. E.g., export it from within eclipse.
+2. Copy the WAR file to /usr/local/tomcat/webapp/. Restart Tomcat.
+3. Or, better yet, from Tomcat Manager (web GUI) deploy the WAR file.
+Either way, Tomcat would copy the WAR to the webapp/ folder, and for abc.war it
+would unzip it to abc/ folder, which holds contents like META-INF/, WEB-INF/,
+jsp/, css/, js/, etc.
+
+*******************
+[Include supporting jar libraries]
+
+For example, to have mysql support, Tomcat need mysql-connector-{version}.jar.
+One way is to have it in $CATALINA_HOME/lib. This would make it visible to all
+applications in Tomcat. Not so good if different applications need different
+versions of it. The better way is to have it deployed into $CATALINA_HOME/
+webapps/$YOUR_APP/WebContent/WEB-INF/lib/ for each application that need it. If
+it is placed in the $YOUR_ECLIPSE_PROJ_ROOT/WebContent/WEB-INF/lib/, eclipse
+would pack it within the war file. When Tomcat deploy that war file, the jar
+is unpacked into $CATALINA_HOME/webapps/$YOUR_APP/WebContent/WEB-INF/lib/.
+
+Similarly, to have JSTL support, place jstl-{ver}.jar and standard-{ver}.jar
+in .../WEB-INF/lib/ as well. Without them, Tomcat would report that JVM cannot
+find/create some class(es) like org.apache.jsp.book_jsp, where book.jsp has
+some references to jstl like:
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"%>
+
+If Maven is used to manage the dependencies, I don't need to manually place jar
+files in the .../lib/ folder. Instead, I would list the supporting libraries in
+my POM file and Maven would automatically pull them and pack them into my war.
+
+One interesting and important minute is that, at first I placed two symlinks of
+jstl-{ver}.jar and standard-{ver}.jar in .../WEB-INF/lib/, and that was all
+right with compiling, packaging and execution. However, that left eclipse in
+confusion and it showed me red crosses with all Expression Language (EL) state-
+ments. For example:
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"%>
+...
+            <td>${fn:escapeXml("<%=author.getName()%>")}</td>
+...
+
+Eclipse complained that "the function 'fn:escapeXml' is undefined." After I
+replaced the symlinks with the real jar files, this error message disappeared.
+
+*******************
+[JSP]
+
+- JSP files should be placed under WEB-INF/{optional_subfolder/}.
+- If a servlet-mapping is defined to map a url-pattern to a servlet, and this
+servlet then creates a RequestDispatcher with a JSP file as the url, then
+forward() the request to this url, then this JSP would be processed by the web
+container (e.g., tomcat).
+- Or, a browser could point directly to an url such as http://.../xxx.jsp, and
+typically for a asp residing in WebContent/somepath/x.jsp, it could be referenced
+as http://host.name/webappname/somepath/x.jsp.
+- Thus, it is a question how to prevent user from pointing a browser directly to
+a jsp which should be invisible. 
