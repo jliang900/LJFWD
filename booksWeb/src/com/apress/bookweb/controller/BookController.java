@@ -34,7 +34,6 @@ public class BookController extends HttpServlet {
 		List<Category> categoryList = bookDao.findAllCategories();
 		ServletContext context = config.getServletContext();
 		context.setAttribute("categoryList", categoryList);
-
 	}
 
 	protected void doGet(HttpServletRequest request,

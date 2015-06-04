@@ -44,6 +44,11 @@
 			</thead>
 			<tbody>
 				<%
+				/* The following line would cause an unchecked type warning.
+				   The best practise is to use EL which would not only remove
+				   this warning, but also is much better than embedding java
+				   codes in JSP.
+				 */
 					List<Book> books = (List<Book>) request.getAttribute("bookList");
 					Iterator<Book> iterator = books.iterator();
 					while (iterator.hasNext()) {
