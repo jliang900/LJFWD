@@ -1,3 +1,4 @@
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
 *******************
 [LJWD]
 
@@ -169,4 +170,36 @@ container (e.g., tomcat).
 typically for a asp residing in WebContent/somepath/x.jsp, it could be referenced
 as http://host.name/webappname/somepath/x.jsp.
 - Thus, it is a question how to prevent user from pointing a browser directly to
-a jsp which should be invisible. 
+a jsp which should be invisible.
+
+*******************
+[Maven]
+
+Maven 3.0.3 comes with my Mac OS 10.8.2. Eclipse Luna comes with Maven plugin.
+
+At first when I tried to use eclipse to create a maven project of
+maven-archetype-webapp type, it failed with the following error:
+
+Could not resolve archetype org.apache.maven.archetypes:maven-archetype-webapp:RELEASE from any of the configured repositories.
+Could not resolve artifact org.apache.maven.archetypes:maven-archetype-webapp:pom:RELEASE
+Failed to resolve version for org.apache.maven.archetypes:maven-archetype-webapp:pom:RELEASE: Could not find metadata org.apache.maven.archetypes:maven-archetype-webapp/maven-metadata.xml in local (/Users/jliang/.m2/repository)
+Failed to resolve version for org.apache.maven.archetypes:maven-archetype-webapp:pom:RELEASE: Could not find metadata org.apache.maven.archetypes:maven-archetype-webapp/maven-metadata.xml in local (/Users/jliang/.m2/repository)
+
+Online search pointed to several directions, including
+* downloading the maven-archetype-webapp-{ver}.jar and register it with maven so
+that maven has it in the local repository.
+* creating the correct proxy settings in maven user setting file (typically
+~/.m2/setting.xml).
+* http://www.tuicool.com/articles/36FFBv, adding a mirror site.
+
+I didn't try the first approach since it de-automated the process. I fixed the
+proxy settings but it doesn't solve the problem. The third one worked:
+
+<mirrors>
+	<mirror>
+		<id>ibiblio.org</id>
+		<name>ibiblio Mirror of http://repo1.maven.org/maven2/</name>
+		<url>http://mirrors.ibiblio.org/pub/mirrors/maven2</url>
+		<mirrorOf>central</mirrorOf>
+	</mirror>
+</mirrors>
