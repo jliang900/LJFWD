@@ -203,3 +203,21 @@ proxy settings but it doesn't solve the problem. The third one worked:
 		<mirrorOf>central</mirrorOf>
 	</mirror>
 </mirrors>
+
+*******************
+[Git, Eclipse, and Maven]
+
+What files should be checked into git? Some people choose to include eclipse
+(or other IDE alike) specific files such as .classpath, .project, .settings/*.pref, so that once checked out it is *IMMEDIATELY* usable. Some choose not to
+include them so that the project is IDE independent. With the help of maven,
+a reasonable solution is to check in pom.xml and have git ignore other IDE files
+with the help of .gitignore. Once checked out, maven could happily create the
+eclipse files for you ($>mvm eclipse:eclipse).
+
+*******************
+[Maven template based projects]
+
+Maven can create project skeletons based on many prebuilt templates, such as
+maven-archetype-webapp. Note, however, that in my trial, the project is set to
+be compatible with java1.5. I have jre/jdk 1.8 installed, so eclipse complains
+that some incompatibility. I changed the java 1.5 to java 1.8 in the project facet (project property) and that is gone.
