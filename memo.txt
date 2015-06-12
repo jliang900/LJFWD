@@ -269,3 +269,20 @@ I didn't verify that. But I did some test and found that in login.jsp, two lines
 
 caused the problem. They both correspond to some text edit control, and maybe
 they triggered com.opensymphony.xwork2.util.LocalizedTextUtil.
+
+*******************
+[login.action or login]
+
+In login.jsp, the following lines:
+<%@ taglib prefix="s" uri="/struts-tags"%>
+	<s:form action="login.action" method="post">
+	...
+	</s:form>
+
+causes a warning from struts2, saying that:
+WARNING: No configuration found for the specified action: 'login.action' in namespace: ''. Form action defaulting to 'action' attribute's literal value.
+
+Online search indicates that it should be:
+	<s:form action="login" ...
+
+and then the warning is gone.

@@ -7,10 +7,10 @@
 <body>
 	<h3>Login Bookstore</h3>
 	<s:actionerror />
-	<s:form action="login" method="post">
+	<s:form action="executeloginLink" method="post">
 		<s:textfield name="username" key="label.username" size="30" />
 		<s:password name="password" key="label.password" size="30" />
-		<s:submit method="execute" align="center" />
+		<s:submit method="executeLogin" align="center" />
 	</s:form>
 </body>
 </html>
