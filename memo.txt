@@ -221,3 +221,51 @@ Maven can create project skeletons based on many prebuilt templates, such as
 maven-archetype-webapp. Note, however, that in my trial, the project is set to
 be compatible with java1.5. I have jre/jdk 1.8 installed, so eclipse complains
 that some incompatibility. I changed the java 1.5 to java 1.8 in the project facet (project property) and that is gone.
+
+Another thing is that I need to manually add tomcat lib into eclipse java build
+path, otherwise eclipse would complain about not able to resolve references to
+javax.servlet.http.HttpServlet. Not a surprise, as neither maven nor eclipse
+knows if I have tomcat lib or if I want to include it in the build path.
+
+*******************
+[welcome-file-list]
+
+In "struts2bookstore" sample, the instruction mentions adding a <welcome-file-
+list/> section into the web.xml. However, it does not specify the insertion
+position. At first I tried it before the <filter/> and <filter-mapping/>,
+which made eclipse complain. I misunderstood the message, thinking that this
+<welcome-file-list/> may be incompatible with my environment, so I removed it.
+That was fine, no complaints, and tomcat starts ok. But when visiting the
+http://localhost:8080/struts2bookstore url, struts reports:
+
+There is no Action mapped for namespace [/] and action name [] associated with context path [/struts2bookstore]
+
+After struggling for a while, I accidentally put back the <welcome-file-list/>
+section into web.xml, this time after <filter-mapping/>. Aha, it worked all
+right now. But here is the question: why?
+
+I believe the answer is that without the specified welcome-file, it defaults to
+index.jsp (which is present in helloworldStruts2 sample). Since index.jsp does
+not exist, thus the error. However, it is not clear why struts report an error,
+not tomcat. After all, the web.xml is for tomcat. It seems that tomcat finds
+no index.jsp, and somehow hands the problem to struts, and struts reports it.
+
+Another problem is that while it works on the browser side, tomcat still throws
+a warning saying that:
+
+WARNING: couldn't clear tomcat cache
+java.lang.NoSuchFieldException: resourceEntries
+
+According to http://www.haosearch.com/technologyquestionsandanswers/java/
+2014-12-19-51375.html, in com.opensymphony.xwork2.util.LocalizedTextUtil struts
+has WebappClassLoader work on resourceEntries. However, tomcat8 had some change
+with org.apache.catalina.loader.WebappClassLoader such that it does not support
+resourceEntries, while tomcat7 behaves ok. So the suggestion is to use tomcat7.
+
+I didn't verify that. But I did some test and found that in login.jsp, two lines
+
+	<s:textfield name="username" key="label.username" size="30" />
+	<s:password name="password" key="label.password" size="30" />
+
+caused the problem. They both correspond to some text edit control, and maybe
+they triggered com.opensymphony.xwork2.util.LocalizedTextUtil.
