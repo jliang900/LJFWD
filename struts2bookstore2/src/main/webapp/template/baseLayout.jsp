@@ -12,9 +12,17 @@
 </head>
 <body>
 	<div id="centered">
+	<center>
 		<tiles:insertAttribute name="header" />
-		<tiles:insertAttribute name="menu" />
-		<tiles:insertAttribute name="body" />
+	</center>
+    <center>
+		<table border="1">
+			<tr>
+				<td><tiles:insertAttribute name="menu" /></td>
+				<td><tiles:insertAttribute name="body" /></td>
+			</tr>
+		</table>
 	</div>
+	</center>
 </body>
 </html>

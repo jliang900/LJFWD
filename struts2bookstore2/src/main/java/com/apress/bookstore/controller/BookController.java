@@ -1,16 +1,7 @@
 package com.apress.bookstore.controller;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import com.apress.bookstore.dao.BookDAO;
 import com.apress.bookstore.dao.BookDAOImpl;
@@ -32,14 +23,12 @@ public class BookController extends ActionSupport {
 	private Map<String, Object> session;
 	private User user;
 	private List<Category> categoryList;
-	private String imageUrl;
 
 	public String login() {
 		return "login";
 	}
 
-	public String executelogin() {
-		String executelogin = "failed";
+	public String executeLogin() {
 		session = ActionContext.getContext().getSession();
 		dao = new BookDAOImpl();
 		user = new User();
@@ -47,17 +36,14 @@ public class BookController extends ActionSupport {
 		user.setPassword(getPassword());
 		setUser(user);
 		if (dao.isUserAllowed(user)) {
-
 			setCategoryList(dao.findAllCategories());
 			session.put("username", username);
 			session.put("categoryList", getCategoryList());
-			executelogin = "success";
+			return "home";
 		} else {
 			addActionError(getText("error.login"));
-			return "error";
+			return "login";
 		}
-		// return result;
-		return "executelogin";
 	}
 
 	public String error() {
@@ -72,6 +58,7 @@ public class BookController extends ActionSupport {
 
 	public String booksByCategory() {
 		dao = new BookDAOImpl();
+		System.out.println("category:"+category);
 		setBookList(dao.findBooksByCategory(category));
 		return "booksByCategory";
 	}

@@ -8,20 +8,26 @@
 		<put-attribute name="body" value="/template/body.jsp" />
 	</definition>
 
-	<definition name="login" extends="baseLayout">
-		<put-attribute name="title" value="Log in" />
-		<put-attribute name="menu" value="" />
-		<put-attribute name="body" value="/login.jsp" />
-	</definition>
+    <definition name="login" extends="baseLayout">
+        <put-attribute name="title" value="Log in" />
+        <put-attribute name="menu" value="" />
+        <put-attribute name="body" value="/view/login.jsp" />
+    </definition>
+
+    <definition name="executeLogin" extends="baseLayout">
+        <put-attribute name="title" value="Log in" />
+        <put-attribute name="menu" value="/template/menu.jsp" />
+        <put-attribute name="body" value="/view/home.jsp" />
+    </definition>
 
 	<definition name="error" extends="baseLayout">
 		<put-attribute name="title" value="Log in" />
 		<put-attribute name="menu" value="" />
-		<put-attribute name="body" value="/login.jsp" />
+		<put-attribute name="body" value="/view/error.jsp" />
 	</definition>
 
 	<definition name="home" extends="baseLayout">
-		<put-attribute name="title" value="Log in" />
+		<put-attribute name="title" value="Home" />
 		<put-attribute name="menu" value="/template/menu.jsp" />
 		<put-attribute name="body" value="/view/home.jsp" />
 	</definition>
@@ -29,11 +35,18 @@
 	<definition name="logout" extends="baseLayout">
 		<put-attribute name="title" value="Log in" />
 		<put-attribute name="menu" value="" />
-		<put-attribute name="body" value="/login.jsp" />
+		<put-attribute name="body" value="/view/logout.jsp" />
 	</definition>
 
-	<definition name="allBooks" extends="baseLayout">
-		<put-attribute name="title" value="All Books" />
-		<put-attribute name="body" value="/allBooks.jsp" />
-	</definition>
+    <definition name="bookList" extends="baseLayout">
+        <put-attribute name="title" value="Log in" />
+        <put-attribute name="menu" value="/template/menu.jsp" />
+        <put-attribute name="body" value="/view/bookList.jsp" />
+    </definition>
+
+    <definition name="selectedBooks" extends="baseLayout">
+        <put-attribute name="title" value="Selected Books" />
+        <put-attribute name="menu" value="/template/menu.jsp" />
+        <put-attribute name="body" value="/view/selectedBooks.jsp" />
+    </definition>
 </tiles-definitions>

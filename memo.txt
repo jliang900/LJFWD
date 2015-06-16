@@ -286,3 +286,91 @@ Online search indicates that it should be:
 	<s:form action="login" ...
 
 and then the warning is gone.
+
+*******************
+[HTML <form/>]
+
+The <form/> structure supports a collection of one-line text boxes and multi-line text areas, checkboxes, radio button groups, drop down lists, multi-selection lists, and finally, submit buttons.
+
+Each control can have a unique id. They can have names, not necessarily unique. For radio buttons, those with the same name are grouped together. Each can have a value, not limited in anyway.
+
+Ids are used mostly at the client side, i.e., the browsers, to uniquely identify a control, which is useful with CSS or JS. Names and values, on the other side, are used mostly on the server side, when they are submitted via HTTP POST and presented in the URL as {name}={value} sequences.
+
+*******************
+[Enable Expression Language]
+
+EL support was introduced in JSTL 1.0. Originally it can only be used within JSTL tags,
+such as
+
+<c:out value="${ 3 + 7}">
+
+Since JSP2.0/Servlet2.4, EL is fully supported in everywhere in a JSP file, such as
+
+<p>Hi, 2+2=${2+2}</p>
+
+However, sometimes out of the box EL does not work due to one or more of the following:
+
+1. Application server in question doesn't support JSP 2.0.
+2. The web.xml is not declared as Servlet 2.4 or higher.
+3. The @page is configured with isELIgnored=true.
+4. The web.xml is configured with <el-ignored>true</el-ignored> in <jsp-config>.
+
+In my case, the default web.xml created by maven-archetype-webapp looks like:
+
+<!DOCTYPE web-app PUBLIC
+ "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+ "http://java.sun.com/dtd/web-app_2_3.dtd" >
+
+<web-app>
+    <!-- Here you go. -->
+</web-app>
+
+To declare Servlet 2.4 or higher, it should look like:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+    id="WebApp_ID"
+    version="3.1">
+
+    <!-- Here you go. -->
+
+</web-app>
+
+*******************
+[How web.xml, struts.xml and tiles.xml work together]
+
+Firstly, tomcat is the outmost web container which receives all HTTP requests, therefore
+web.xml is the first decision layer. For example, the <welcome-file-list/> defines the
+default local files to be processed and presented by tomcat, when a request has no local
+path part, such as http://{ip}:{port}/{appname}. Also, web.xml very likely would define <servlet/> and <servlet-mapping/> tags, or <filter/> and <filter-mapping/> tags, so that
+local paths like "/book" could be dispatched to the appropriate servlet or filter. A
+servlet or a filter is nothing but a java class. A servlet class typically derives from
+HttpServlet class, and in Struts2 framework StrutsPrepareAndExecuteFilter is the typical
+filter class.
+
+With StrutsPrepareAndExecuteFilter in web.xml and typically it is mapped to "/*" path,
+Struts2 can capture all HTTP requests. Then it comes to the struts.xml (and other custom
+struts configurations maybe) how these requests would be handled. Struts.xml defines
+actions and action handler java classes. These handlers all return a string. Struts.xml
+defines the next steps depending on the returned string. For example, if "success" is
+returned, "/view/home.jsp" is the next step, then it is fed to tomcat.
+
+Struts2 supports <result-types> directives to customize the view rendering. Tiles is one
+such result renderer. Now, if "success" is returned by an action handler, and struts.xml
+says that Tiles should handle the result, Struts2 would pass the result text (e.g.,
+"home") to Tiles. In tiles.xml, a <definition> exists for "home", and it describes some
+tile elements. These elements are referenced in some JSP files. These JSP files are processed by Tiles engine (a jar file) and these elements are interpreted accordingly.
+
+Note that tomcat has the initial control. It hands the control to Struts2 engine (jar)
+based on web.xml definition. Struts2 engine hands the control to Tiles engine because of
+struts.xml direction. Finally Tiles processes the JSP files. It's not clear if Tiles only
+process the tiles related part of the JSP, and hands back the rest to Struts2/tomcat to
+finish the work. This makes sense, though.
+
+Last thing, the Tiles result handling class is org.apache.struts2.views.tiles.TilesResult,
+indicating that it is part of Struts2.
+ 
+

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.apress.bookweb.model;
+package com.apress.bookstore.model;
 
 /**
  * @author jliang

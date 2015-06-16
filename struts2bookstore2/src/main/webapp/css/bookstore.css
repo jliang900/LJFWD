@@ -6,7 +6,6 @@ body {
 }
 
 #centered {
-	width: 800px;
 	text-align: left;
 	border: 0px;
 	padding: 0;
@@ -14,7 +13,9 @@ body {
 }
 
 .header {
-	height: 79px;
+    width: 600px;
+	height: 150px;
+	text-align: left;
 	color: #f9f3e9;
 	background: #00FFFF;
 }
@@ -49,7 +50,7 @@ table thead tr {
 table thead tr th {
 	margin: 0px;
 	padding: 2px;
-	background-color: #0BA58E;
+	background-color: #FBA58E;
 }
 
 table tr {
@@ -68,7 +69,7 @@ table tr td,th {
 }
 
 #th-title {
-	width: 350px;
+	width: 200px;
 }
 
 #th-author {
