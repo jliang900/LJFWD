@@ -11,7 +11,7 @@
 	<package name="basicstruts2" extends="struts-default">
 		<action name="login" class="com.apress.bookstore.action.LoginAction">
 			<result name="success">view/home.jsp</result>
-			<result name="error">login.jsp</result>
+			<result name="error">entry.jsp</result>
 		</action>
 	</package>
 </struts>
