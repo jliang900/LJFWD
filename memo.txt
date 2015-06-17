@@ -373,4 +373,67 @@ finish the work. This makes sense, though.
 Last thing, the Tiles result handling class is org.apache.struts2.views.tiles.TilesResult,
 indicating that it is part of Struts2.
  
+*******************
+[XML, xmlns, xsi, and xsi:schemaLocation]
 
+In many xml files, such as web.xml, struts.xml, tiles.xml and beans.xml (for Spring), I
+saw a lot of codes like:
+
+<mytag xmlns="http://this/is/my/namespace/url"
+	xmlns:xsi="http://this/is/my/schema/instance/url"
+	xsi:schemaLocation="http://this/is/my/namespace/url http://this/is/my/namespace/schema.xsd">
+	<!-- here you go -->
+</mytag>
+
+Finally I searched online and learned what these all mean.
+
+Firstly, tags are all user defined, so there are conflicts. For example, <table> could
+mean a form in a document, or a piece of furniture. To distinguish them, they can be
+prefixed with namespace strings, such as <document:table> or <furniture:table>. There
+could be multiple namespaces used in one xml, most likely from imported xml files. So
+it is preferred that each xml file explicitly defines its namespaces in the root element.
+It could define multiple namespaces, for different elements other than the root, but that
+is rare.
+
+Namespaces are typically long. To simplify it, a short prefix is used instead. And to
+define the prefix for a namespace, the keyword "xmlns" is introduced. It is understood by
+all xml parsers (such required by xml spec). By itself, "xmlns" defines the default
+namespace for all tags without a prefix. Non-default namespace and prefix is defined in
+the form of "xmlns:{prefix}='{namespace}'". So the second line in the example above
+defines a namespace, represented by prefix "xsi".
+
+Now what about "xsi:schemaLocation"? This tells xml processors where to find the schema instances (i.e., xsd files) so it can validate this xml file against them. Since there are different tags from different namespaces, the validation should treat them differently.
+That is, for tags of namespace A, schema A should be used. And so on. Therefore,
+"xsi:schemaLocation" contains pairs of strings. In each pair, the first is the
+namespace string (not the prefix), and the second is the location of the schema file. Why
+use the full namespace string instead of prefix? That is because namespace prefix may be
+absent. Namespace strings themselves can be used as the prefix directly. So it is easier
+to use namespace themselves in the "schemaLocation" sentence.
+
+While namespaces and prefixes can be anything in theory, almost always companies use an
+URL pointing to their website as the namespace. And there are prefixes so common that they
+become almost de facto standard, such as "xsi", which means "XML Schema Instance". Also,
+in almost all cases the schema location points to an URL. Would this mean that to validate
+the xml, the xml processor must connect to the internet?
+
+No. This is not required. Because the schema files are almost always available locally.
+For example, the Spring framework consists of more than a dozen jar files. To use Spring,
+one needs to deploy some of the jar files locally. And in each jar, there are a bunch of
+xsd files. How would Spring know about them? By a /META-INF/spring.schemas file, which
+looks like:
+
+http\://www.springframework.org/schema/context/spring-context-2.5.xsd=org/springframework/context/config/spring-context-2.5.xsd
+http\://www.springframework.org/schema/context/spring-context-3.0.xsd=org/springframework/context/config/spring-context-3.0.xsd
+...
+
+It simply says that the internet URL is mapped to a local class path.
+
+Now putting these all together, this is how it works: JVM starts, Spring is started, e.g:
+
+    ApplicationContext  context = new ClassPathXmlApplicationContext("beans.xml");
+
+Spring first sees the spring.schemas file, parses it, remembers the mapping. Spring
+loads the configuration file such as beans.xml or application-context.xml. Spring sees
+the "xsi:schemaLocation" sentence, finds the schema location, and uses the mapping to
+load the local schema file. Then, for all namespace qualified (including those default)
+xml elements, schema validation is performed. Done.
