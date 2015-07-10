@@ -387,11 +387,11 @@ saw a lot of codes like:
 
 Finally I searched online and learned what these all mean.
 
-Firstly, tags are all user defined, so there are conflicts. For example, <table> could
+Firstly, tags are all user defined, so conflicts happen. For example, <table> could
 mean a form in a document, or a piece of furniture. To distinguish them, they can be
 prefixed with namespace strings, such as <document:table> or <furniture:table>. There
 could be multiple namespaces used in one xml, most likely from imported xml files. So
-it is preferred that each xml file explicitly defines its namespaces in the root element.
+it is preferred that each xml file explicitly defines its namespace in the root element.
 It could define multiple namespaces, for different elements other than the root, but that
 is rare.
 
@@ -437,3 +437,14 @@ loads the configuration file such as beans.xml or application-context.xml. Sprin
 the "xsi:schemaLocation" sentence, finds the schema location, and uses the mapping to
 load the local schema file. Then, for all namespace qualified (including those default)
 xml elements, schema validation is performed. Done.
+
+*******************
+[Pivotal tc server, Spring framework, Spring Tool Suite and others]
+
+Pivotal tc Server, once VMWare tc server, is a hardened tomcat for enterprises. It was published back in 2010 by SpringSource (sub of VMWare), and then given to Pivotal (joint venture of EMC, VMWare and GE). As of 07/10/2015, the latest version is 3.1.1, a standard edition and a developer edition. For Mac OS, only the developer edition is available.
+
+The tc Server installation includes two embedded tomcat installations, ver 7 and ver 8. Multiple tomcat runtime instances can be created, using either version, or any other tomcat installation outside tc Server, as long as the compatibility is ensured. The instances contain the config files such as server.xml, catalina.properties, etc. By separating such configs from the binaries, all instances can share the same binaries. The instance folder is referred to as CATALINA_BASE, while the shared installation folder is CATALINA_HOME.
+
+Ideally, I would create a tc Server instance, then create a new tc Server config in eclipse to point to it. Or I could ask eclipse to create the tc Server instance for me as well. This tc Server would stand side by side the old tomcat server in the "server" panel of eclipse. Any web app the tomcat server serves, in theory, could be served by this new server.
+
+In reality nothing goes so smoothly. The first instance I created was based on tomcat 7. The version could be specified as an argument of tcruntime-instance.sh, as I later learned. I upgraded this instance to use tomcat 8. However, I suspect that some part of the config is not totally upgraded, which caused the following problem. The problem is that the embedded tomcat failed to start, complaining ClassNotFoundException about some JasperListener class. It took me a whole day to figure out that, first, this class was introduced around tomcat 6, and retired by tomcat 8. That is, this class file is available in catalina.jar of tomcat 6 and 7, but not in tomcat 8. Second, this class is loaded by a command in <tcServerInstance>/conf/server.xml, and it is copied from another server.xml under the "Servers" project in eclipse workspace. In particular, there are a bunch of subfolders such as Servers/<instancename>-config/, where server.xml and other config files reside. Putting these together, this command should only appear for tomcat 6/7, not 8. And tomcat 8 simply fails when this line is present.
